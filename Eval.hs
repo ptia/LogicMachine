@@ -6,7 +6,7 @@ import Data.Either
 
 conns = [(And, (&&)),
          (Or, (||)),
-         (Arrow, (\ b1 b2 -> not b1 || b2)),
+         (Arrow, \ b1 b2 -> not b1 || b2),
          (DoubleArrow, (==))]
 
 eval :: Expr -> Model -> Assignment -> Either Bool Object
