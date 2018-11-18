@@ -10,34 +10,27 @@ conns = [(And, (&&)),
          (DoubleArrow, (==))]
 
 eval :: Expr -> Model -> Assignment -> Either Bool Object
-
 eval (Quant ForAll v e) m h
   = Left $ and $ lefts [eval e m ((v, o) : h) | o <- objs m]
 eval (Quant Exists v e) m h
   = Left $ or $ lefts [eval e m ((v, o) : h) | o <- objs m]
-
 eval (Conn c e1 e2) m h
   = Left $ fromJust (lookup c conns) b1 b2
   where
     Left b1 = eval e1 m h
     Left b2 = eval e2 m h
-
 eval (Not e) m h
   = Left $ not b
   where
     Left b = eval e m h
-
 eval (Const c) m h
   = Right $ fromJust (lookup c (consts m))
-
 eval (Var v) m h
   = Right $ fromJust (lookup v h)
-
 eval (Rel r args) m h
   = Left $ fromJust (lookup r (rels m)) args'
   where
     args' = rights (map (eval' m h) args)
-  
 eval (Func f args) m h
   = Right $ fromJust (lookup f (funcs m)) args'
   where
