@@ -1,20 +1,10 @@
+module Parser where
+
+import Logic
 import Data.Char
 import Data.List
 import Data.List.Split
 import Debug.Trace
-
-data Expr = ForAll String Expr 
-          | Exists String Expr
-          | Not Expr
-          | And Expr Expr
-          | Or Expr Expr
-          | Arrow Expr Expr
-          | DoubleArrow Expr Expr
-          | Const String
-          | Var String
-          | Func String [Expr]
-          | List [Expr]
-          deriving (Show)
 
 isSep, isSym, isQuant :: Char -> Bool
 isSep   = flip elem "()"
@@ -45,14 +35,15 @@ precedence fun = 100
 
 parseSym :: String -> [Expr] -> [Expr]
 parseSym "¬" (a : as)          = Not a : as
-parseSym "∧" (a1 : a2 : as)    = And a2 a1 : as
-parseSym "∨" (a1 : a2 : as)    = Or a2 a1 : as
-parseSym "→" (a1 : a2 : as)    = Arrow a2 a1 : as
-parseSym "↔" (a1 : a2 : as)    = DoubleArrow a2 a1 : as
-parseSym ('∀' : v) (a : as)    = ForAll v a : as
-parseSym ('∃' : v) (a : as)    = Exists v a : as
+parseSym "∧" (a1 : a2 : as)    = Conn And a2 a1 : as
+parseSym "∨" (a1 : a2 : as)    = Conn Or a2 a1 : as
+parseSym "→" (a1 : a2 : as)    = Conn Arrow a2 a1 : as
+parseSym "↔" (a1 : a2 : as)    = Conn DoubleArrow a2 a1 : as
+parseSym ('∀' : v) (a : as)    = Quant ForAll v a : as
+parseSym ('∃' : v) (a : as)    = Quant Exists v a : as
 parseSym "," (List l : a : as) = List (a : l) : as
 parseSym "," (a1 : a2 : as)    = List [a2, a1] : as
+parseSym "(" _                 = error "Unmatched ("
 parseSym f (List l : as)       = Func f l : as
 parseSym f (a : as)            = Func f [a] : as
 
@@ -72,8 +63,17 @@ parse' (t : ts) ops args
     (opsIn, opsOut) = break ("(" ==) ops
     isFunc          = isAlpha (head t) && isPrefixOf ["("] ts
 
+--Turns top-level funcs into rels
+parse'' :: Expr -> Expr
+parse'' (Quant q v e)  = Quant q v (parse'' e)
+parse'' (Conn c e1 e2) = Conn c (parse'' e1) (parse'' e2)
+parse'' (Not e)        = Not (parse'' e)
+parse'' (Const c)      = Const c
+parse'' (Var v)        = Var v
+parse'' (Func f args)  = Rel f args
+
 parse :: String -> Expr
-parse s = parse' (tokenise s) [] []
+parse s = parse'' (parse' (tokenise s) [] [])
 
 --Some examples
 ex1 = "∃x∀y((human(y) ∧ ¬eq(Clyde, y)) → bought(y, x))"
