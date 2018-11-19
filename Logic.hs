@@ -10,6 +10,7 @@ data Expr = Quant Quantifier String Expr
           | Var String
           | Rel String [Expr]
           | Func String [Expr]
+          | Eq Expr Expr
           | List [Expr]
           deriving (Show)
 
@@ -23,3 +24,13 @@ data Model      = Model {objs :: [Object],
                          consts :: [Binding],
                          rels :: [Relation],
                          funcs :: [Function]}
+
+instance Show Model where
+  show (Model objs consts rels funcs)
+    = "Model {objs = " ++ show objs
+      ++ ", consts = " ++ show consts
+      ++ ", rels = " ++ show (map fst rels)
+      ++ ", funcs = " ++ show (map fst funcs) 
+      ++ "}"
+  showsPrec
+    = undefined

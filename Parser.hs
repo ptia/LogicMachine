@@ -8,7 +8,7 @@ import Debug.Trace
 
 isSep, isSym, isQuant :: Char -> Bool
 isSep   = flip elem "()"
-isSym   = flip elem "∀∃∧∨→↔¬,"
+isSym   = flip elem "∀∃∧∨→↔¬,="
 isQuant = flip elem "∀∃"
 
 tokenise :: String -> [String]
@@ -22,6 +22,7 @@ tokenise (c : cs)
     (w, ws) = span isAlpha cs
 
 precedence :: String -> Int
+precedence "=" = 5
 precedence ('∀' : _) = 4
 precedence ('∃' : v) = 4
 precedence "¬" = 4
@@ -39,6 +40,7 @@ parseSym "∧" (a1 : a2 : as)    = Conn And a2 a1 : as
 parseSym "∨" (a1 : a2 : as)    = Conn Or a2 a1 : as
 parseSym "→" (a1 : a2 : as)    = Conn Arrow a2 a1 : as
 parseSym "↔" (a1 : a2 : as)    = Conn DoubleArrow a2 a1 : as
+parseSym "=" (a1 : a2 : as)    = Eq a2 a1 : as
 parseSym ('∀' : v) (a : as)    = Quant ForAll v a : as
 parseSym ('∃' : v) (a : as)    = Quant Exists v a : as
 parseSym "," (List l : a : as) = List (a : l) : as
@@ -71,6 +73,7 @@ parse'' (Not e)        = Not (parse'' e)
 parse'' (Const c)      = Const c
 parse'' (Var v)        = Var v
 parse'' (Func f args)  = Rel f args
+parse'' (Eq e1 e2)     = Eq e1 e2
 
 parse :: String -> Expr
 parse s = parse'' (parse' (tokenise s) [] [])

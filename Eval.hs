@@ -35,6 +35,11 @@ eval (Func f args) m h
   = Right $ fromJust (lookup f (funcs m)) args'
   where
     args' = rights (map (eval' m h) args)
+eval (Eq e1 e2) m h
+  = Left $ o1 == o2
+  where
+    Right o1 = eval e1 m h
+    Right o2 = eval e2 m h
 
 eval' :: Model -> Assignment -> Expr -> Either Bool Object
 eval' m h e = eval e m h
