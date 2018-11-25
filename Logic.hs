@@ -3,7 +3,7 @@ module Logic where
 -- Syntax
 data Connective = And | Or | Arrow | DoubleArrow deriving (Show, Eq)
 data Quantifier = ForAll | Exists deriving (Show)
-data Expr = Quant Quantifier String Expr 
+data Expr = Quant Quantifier String String Expr 
           | Conn Connective Expr Expr
           | Not Expr
           | Const String
@@ -16,11 +16,12 @@ data Expr = Quant Quantifier String Expr
 
 -- Semantics
 type Object     = String
+type Sort       = String
 type Binding    = (String, Object)
 type Relation   = (String, [Object] -> Bool)
 type Function   = (String, [Object] -> Object)
 type Assignment = [Binding]
-data Model      = Model {objs :: [Object],
+data Model      = Model {objs :: [(Object, Sort)],
                          consts :: [Binding],
                          rels :: [Relation],
                          funcs :: [Function]}

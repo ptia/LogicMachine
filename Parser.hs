@@ -15,11 +15,11 @@ tokenise :: String -> [String]
 tokenise ""
   = []
 tokenise (c : cs)
-  | isAlpha c || isQuant c = (c : w) : tokenise ws
-  | isSym c || isSep c     = [c] : tokenise cs
-  | c == ' '               = tokenise cs
+  | isAlpha c || isQuant c || c == ':' = (c : w) : tokenise ws
+  | isSym c   || isSep c               = [c] : tokenise cs
+  | c == ' '                           = tokenise cs
   where
-    (w, ws) = span isAlpha cs
+    (w, ws) = span (\c -> isAlpha c || c == ':') cs
 
 precedence :: String -> Int
 precedence "=" = 5
@@ -35,14 +35,20 @@ precedence "(" = -2
 precedence fun = 100
 
 parseSym :: String -> [Expr] -> [Expr]
+parseSym ('∀' : v) (a : as)    
+  = Quant ForAll var (drop 1 sort) a : as
+  where
+    (var, sort) = break (':' ==) v
+parseSym ('∃' : v) (a : as)    
+  = Quant Exists var (drop 1 sort) a : as
+  where
+    (var, sort) = break (':' ==) v
 parseSym "¬" (a : as)          = Not a : as
 parseSym "∧" (a1 : a2 : as)    = Conn And a2 a1 : as
 parseSym "∨" (a1 : a2 : as)    = Conn Or a2 a1 : as
 parseSym "→" (a1 : a2 : as)    = Conn Arrow a2 a1 : as
 parseSym "↔" (a1 : a2 : as)    = Conn DoubleArrow a2 a1 : as
 parseSym "=" (a1 : a2 : as)    = Eq a2 a1 : as
-parseSym ('∀' : v) (a : as)    = Quant ForAll v a : as
-parseSym ('∃' : v) (a : as)    = Quant Exists v a : as
 parseSym "," (List l : a : as) = List (a : l) : as
 parseSym "," (a1 : a2 : as)    = List [a2, a1] : as
 parseSym "(" _                 = error "Unmatched ("
@@ -67,16 +73,17 @@ parse' (t : ts) ops args
 
 --Turns top-level funcs into rels
 parse'' :: Expr -> Expr
-parse'' (Quant q v e)  = Quant q v (parse'' e)
-parse'' (Conn c e1 e2) = Conn c (parse'' e1) (parse'' e2)
-parse'' (Not e)        = Not (parse'' e)
-parse'' (Const c)      = Const c
-parse'' (Var v)        = Var v
-parse'' (Func f args)  = Rel f args
-parse'' (Eq e1 e2)     = Eq e1 e2
+parse'' (Quant q v s e)  = Quant q v s (parse'' e)
+parse'' (Conn c e1 e2)   = Conn c (parse'' e1) (parse'' e2)
+parse'' (Not e)          = Not (parse'' e)
+parse'' (Const c)        = Const c
+parse'' (Var v)          = Var v
+parse'' (Func f args)    = Rel f args
+parse'' (Eq e1 e2)       = Eq e1 e2
 
 parse :: String -> Expr
 parse s = parse'' (parse' (tokenise s) [] [])
 
 --Some examples
 ex1 = "∃x∀y((human(y) ∧ ¬eq(Clyde, y)) → bought(y, x))"
+ex2 = "∃x:human ∀y:computer(bought(y, x))"
