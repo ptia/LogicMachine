@@ -1,3 +1,4 @@
+module LogicMachine where
 import Eval
 import Logic
 
@@ -21,10 +22,10 @@ v = Var
 r = Rel
 f = Func
 
-e1 == e2 = Eq e1 e2
+e1 === e2 = Eq e1 e2
 
 x = "x"
 y = "y"
 z = "z"
 
-s1 = fa x "" $ te y "" $ f "bought" [v x, v y] ∧ f "bought" [v y, v x]
+--s1 = fa x "" $ te y "" $ f "bought" [v x, v y] ∧ f "bought" [v y, v x]

@@ -15,11 +15,12 @@ tokenise :: String -> [String]
 tokenise ""
   = []
 tokenise (c : cs)
-  | isAlpha c || isQuant c || c == ':' = (c : w) : tokenise ws
-  | isSym c   || isSep c               = [c] : tokenise cs
-  | c == ' '                           = tokenise cs
+  | isAlphaNum c || isQuant c || c == ':' = (c : w) : tokenise ws
+  | isSym c   || isSep c                  = [c] : tokenise cs
+  | c == ' '                              = tokenise cs
+  | otherwise                             = error ("unexpected" ++ [c])
   where
-    (w, ws) = span (\c -> isAlpha c || c == ':') cs
+    (w, ws) = span (\c -> isAlphaNum c || c == ':') cs
 
 precedence :: String -> Int
 precedence "=" = 5
@@ -64,12 +65,13 @@ parse' (t : ts) ops args
   | isSym (head t)   = parse' ts (t : opsLo) (foldl (flip parseSym) args opsHi)
   | t == ")"         = parse' ts (tail opsOut) (foldl (flip parseSym) args opsIn)
   | isFunc           = parse' ts (t : opsLo) (foldl (flip parseSym) args opsHi)
-  | isUpper (head t) = parse' ts ops (Const t : args)
+  | isConst          = parse' ts ops (Const t : args)
   | isLower (head t) = parse' ts ops (Var t : args)
   where
     (opsHi, opsLo)  = span ((precedence t <) . precedence) ops
     (opsIn, opsOut) = break ("(" ==) ops
     isFunc          = isAlpha (head t) && isPrefixOf ["("] ts
+    isConst         = isUpper (head t) || isDigit (head t)
 
 --Turns top-level funcs into rels
 parse'' :: Expr -> Expr

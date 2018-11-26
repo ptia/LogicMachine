@@ -54,6 +54,7 @@ eval (Eq e1 e2) m h
 eval' :: Model -> Assignment -> Expr -> Either Bool Object
 eval' m h e = eval e m h
 
+{-
 -- Some examples
 bought ["Tony", "308"] = True
 bought ["308", "Clyde"] = True
@@ -64,3 +65,4 @@ m = Model [("Tony", ""), ("Clyde", ""), ("308", "")] [("Daddy", "Tony"), ("Clyde
 s1 = Quant Exists "x" "" (Rel "bought" [Const "Daddy",Var "x"])
 s2 = Quant ForAll "x" "" (Rel "bought" [Const "Daddy",Var "x"])
 s3 = Quant ForAll "x" "" (Conn Or (Rel "bought" [Const "Daddy",Var "x"]) (Rel "bought" [Var "x",Const "Daddy"]))
+-}
