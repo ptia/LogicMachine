@@ -4,8 +4,8 @@ import Logic
 import Data.Maybe
 import Data.Either
 
-fromLeft'  = fromLeft undefined
-fromRight' = fromRight undefined
+fromLeft'  (Left  l) = l
+fromRight' (Right r) = r
 
 conns = [(And, (&&)),
          (Or, (||)),
