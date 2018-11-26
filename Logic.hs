@@ -21,10 +21,10 @@ type Binding    = (String, Object)
 type Relation   = (String, [Object] -> Bool)
 type Function   = (String, [Object] -> Object)
 type Assignment = [Binding]
-data Model      = Model {objs :: [(Object, Sort)],
+data Model      = Model {objs   :: [(Object, Sort)],
                          consts :: [Binding],
-                         rels :: [Relation],
-                         funcs :: [Function]}
+                         rels   :: [Relation],
+                         funcs  :: [Function]}
 
 instance Show Model where
   show (Model objs consts rels funcs)
